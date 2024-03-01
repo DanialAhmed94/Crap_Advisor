@@ -1,3 +1,4 @@
+import 'package:crapadvisor/screens/what3words.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -74,7 +75,7 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
                         child: Text(
                           "Park Life Festival",
                           style: TextStyle(
-                             fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w900,
                               fontSize: 16.0,
                               fontFamily: "Poppins-Bold"),
                         ),
@@ -97,9 +98,15 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
                     Padding(
                       padding: EdgeInsets.only(right: 15),
                       child: Container(
-                        width: double.infinity , // Set your desired width here
+                        width: double.infinity, // Set your desired width here
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        What3WordsScreen(latlong: _markers[0].position,)));
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFF445EFF),
                           ),
@@ -114,7 +121,6 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
                         ),
                       ),
                     ),
-
                   ],
                 ),
               ),

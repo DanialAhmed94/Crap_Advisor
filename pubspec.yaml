@@ -36,6 +36,8 @@ dependencies:
   google_maps_flutter: ^2.5.3
   geolocator: ^8.2.0
   flutter_launcher_icons: ^0.13.1
+  what3words: 3.1.0
+  http: ^0.13.6
 
 
 dev_dependencies:
