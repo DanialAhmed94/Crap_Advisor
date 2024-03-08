@@ -1,8 +1,12 @@
 import 'package:crapadvisor/screens/what3words.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+import '../services/getuser_location.dart';
 
 class GoogleMapWidget extends StatefulWidget {
   const GoogleMapWidget({Key? key}) : super(key: key);
@@ -12,26 +16,121 @@ class GoogleMapWidget extends StatefulWidget {
 }
 
 class _GoogleMapWidgetState extends State<GoogleMapWidget> {
-  final CameraPosition _kGooglePlex =
-      CameraPosition(target: LatLng(52.4862, -1.8904), zoom: 12);
+  late CameraPosition _kGooglePlex = CameraPosition(
+    target: LatLng(0, 0),
+  );
+  late LatLng latlng = LatLng(0, 0);
 
   late GoogleMapController _controller;
-
-  late List<Marker> _markers;
+  List<Marker> _markers = [];
 
   @override
   void initState() {
     super.initState();
+    _initMap().then((_) {
+      _initMarkers(latlng); // Call _initMarkers after _initMap is completed
+    });
+  }
+
+  Future<void> _initMap() async {
+    LocationData locationData = await getUserLocation();
+    latlng = LatLng(locationData.latitude ?? 0, locationData.longitude ?? 0);
+    setState(() {
+      _kGooglePlex = CameraPosition(target: latlng, zoom: 14);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        GoogleMap(
+          initialCameraPosition: _kGooglePlex,
+          onMapCreated: (GoogleMapController controller) {
+            _controller = controller;
+          },
+          markers: Set<Marker>.of(_markers),
+          zoomControlsEnabled: false,
+          myLocationButtonEnabled: false,
+        ),
+        Positioned(
+          bottom: MediaQuery.of(context).size.height * 0.08,
+          right: MediaQuery.of(context).size.width * 0.05,
+          child: ElevatedButton(
+            onPressed: () async {
+              getUserLocation().then((locationData) async {
+                // Make sure to check if locationData is not null
+                if (locationData != null) {
+                  print("my location");
+                  print("${locationData.latitude}, ${locationData.longitude}");
+                  _markers.add(Marker(
+                    icon: await _getCustomMarker(),
+                    markerId: MarkerId("currentLocation"),
+                    position: LatLng(locationData.latitude ?? 0,
+                        locationData.longitude ?? 0),
+                    infoWindow: InfoWindow(title: "Your current location"),
+                  ));
+                  CameraPosition newCameraPosition = CameraPosition(
+                    target: LatLng(locationData.latitude ?? 0,
+                        locationData.longitude ?? 0),
+                    zoom: 14, // Consider setting an appropriate zoom level
+                  );
+                  GoogleMapController googleMapController = await _controller;
+                  googleMapController.animateCamera(
+                    CameraUpdate.newCameraPosition(newCameraPosition),
+                  );
+                  setState(() {});
+                }
+              }).catchError((error) {
+                // Handle any errors here
+                print("Error getting location: $error");
+              });
+            },
+            child: Icon(Icons.my_location_outlined),
+          ),
+        )
+      ],
+    );
+  }
+
+  Future<void> _initMarkers(LatLng latLng) async {
     _markers = [
       Marker(
         markerId: MarkerId("1"),
+        icon: await _getCustomMarker(),
         position: LatLng(52.4862, -1.8904),
         infoWindow: InfoWindow(title: "Crap Advisor"),
         onTap: () {
           _showMarkerInfo(context);
         },
       ),
-    ];
+      Marker(
+        markerId: MarkerId("temp"),
+        icon: await _getCustomMarker(),
+        position: LatLng(latLng.latitude, latLng.longitude),
+        infoWindow: InfoWindow(title: "Your Current Location"),
+      )
+    ]; // Update the UI after setting the markers
+    setState(() {});
+  }
+
+  Future<BitmapDescriptor> _getCustomMarker() async {
+    final Uint8List markerIcon = await _getBytesFromAsset(
+        'assets/icons/marker.png',
+        100); // Change the asset path and size as needed
+    return BitmapDescriptor.fromBytes(markerIcon);
+  }
+
+  Future<Uint8List> _getBytesFromAsset(String path, int width) async {
+    ByteData data = await rootBundle.load(path);
+    ui.Codec codec = await ui.instantiateImageCodec(
+      data.buffer.asUint8List(),
+      targetWidth: width,
+    );
+    ui.FrameInfo fi = await codec.getNextFrame();
+    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
+        .buffer
+        .asUint8List();
   }
 
   _showMarkerInfo(BuildContext context) {
@@ -104,8 +203,9 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) =>
-                                        What3WordsScreen(latlong: _markers[0].position,)));
+                                    builder: (context) => What3WordsScreen(
+                                          latlong: _markers[0].position,
+                                        )));
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFF445EFF),
@@ -128,57 +228,6 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
           ),
         );
       },
-    );
-  }
-
-  Future<Position> getUserLocation() async {
-    await Geolocator.requestPermission()
-        .then((value) {})
-        .onError((error, stackTrace) {
-      print("error" + error.toString());
-    });
-    return await Geolocator.getCurrentPosition();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        GoogleMap(
-          initialCameraPosition: _kGooglePlex,
-          onMapCreated: (GoogleMapController controller) {
-            _controller = controller;
-          },
-          markers: Set<Marker>.of(_markers),
-          zoomControlsEnabled: false,
-        ),
-        Positioned(
-          bottom: MediaQuery.of(context).size.height * 0.08,
-          right: MediaQuery.of(context).size.width * 0.05,
-          child: ElevatedButton(
-            onPressed: () async {
-              getUserLocation().then((value) async {
-                print("my location");
-                print(value.latitude + value.longitude);
-                _markers.add(Marker(
-                  markerId: MarkerId("currentLocation"),
-                  position: LatLng(value.latitude, value.longitude),
-                  infoWindow: InfoWindow(title: "Your current location"),
-                ));
-                CameraPosition newCameraPosition = CameraPosition(
-                  target: LatLng(value.latitude, value.longitude),
-                );
-                GoogleMapController googleMapController = await _controller;
-                googleMapController.animateCamera(
-                  CameraUpdate.newCameraPosition(newCameraPosition),
-                );
-                setState(() {});
-              });
-            },
-            child: Icon(Icons.my_location_outlined),
-          ),
-        )
-      ],
     );
   }
 }

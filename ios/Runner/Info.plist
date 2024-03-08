@@ -55,5 +55,10 @@
    	<string>App app want's to access your location to get address.</string>
    	<key>NSLocationWhenInUseUsageDescription</key>
    	<string> App want's to access your location to get address.</string>
+   	<key>NSAppTransportSecurity</key>
+        <dict>
+            <key>NSAllowsArbitraryLoads</key>
+            <true/>
+        </dict>
 </dict>
 </plist>

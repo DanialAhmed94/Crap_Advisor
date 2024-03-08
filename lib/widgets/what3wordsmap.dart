@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -13,6 +15,19 @@ class _MapScreenState extends State<MapScreen> {
   GoogleMapController? mapController;
   TextEditingController _what3WordsController = TextEditingController();
    Marker? marker = null;
+  bool isSnackBarVisible = false;
+  double buttonPosition = 16;
+
+  void _resetSnackBarFlagAfterDelay() {
+    const delay = Duration(seconds: 2);
+    Timer(delay, () {
+      setState(() {
+        isSnackBarVisible = false;
+        buttonPosition= 16;
+      });
+    });
+  }
+
 
   // The grid overlay is going to be drawn manually using polylines
   Set<Polyline> _gridLines = {};
@@ -74,6 +89,7 @@ class _MapScreenState extends State<MapScreen> {
     }
     setState(() {
       _what3WordsController.clear();
+      marker = null;
 
     });
   }
@@ -121,25 +137,88 @@ class _MapScreenState extends State<MapScreen> {
             controller: _what3WordsController,
             readOnly: true,
             decoration: InputDecoration(
-              labelText: 'What3Words Address',
+              labelText: 'What3Words Address', labelStyle: TextStyle(
+              fontFamily: "Poppins-Medium",
+            ),
               border: OutlineInputBorder(),
             ),
           ),
         ),
         Expanded(
-          child: GoogleMap(
-            onMapCreated: (controller) => _onMapCreated(controller),
-            onCameraMove: _onCameraMove,
-            onTap: _onMapTap,
-            initialCameraPosition: CameraPosition(
-              target: LatLng(52.4862, -1.8904), // Center on London
-              zoom: 20,
-            ),
-            polylines: _gridLines,
-            zoomControlsEnabled: false,
-            markers: marker != null ? Set<Marker>.of([marker!]) : {},
+          child: Stack(
+            children: [
+              GoogleMap(
+                onMapCreated: (controller) => _onMapCreated(controller),
+                onCameraMove: _onCameraMove,
+                onTap: _onMapTap,
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(52.4862, -1.8904), // Center on London
+                  zoom: 20,
+                ),
+                polylines: _gridLines,
+                zoomControlsEnabled: false,
+                markers: marker != null ? Set<Marker>.of([marker!]) : {},
+                myLocationButtonEnabled: false,
+              
+              
+              ),
+              AnimatedPositioned(
+                bottom: buttonPosition,
+                left: 0,
+                right: 0,
+                duration: Duration(milliseconds: 300),
+                child: Center(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.2,
+                        right: MediaQuery.of(context).size.width*0.2),
+                    child: Container(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: (){
+                          if(marker==null)
+                            {
+                              setState(() {
+                                buttonPosition = 40.0; // Move button upwards when Snackbar is shown
+                              });
+                                    if(!isSnackBarVisible)
+                                      {
+                                        isSnackBarVisible=true;
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                          content: Text(" Select a position first"),
+                                          duration: Duration(seconds: 2),
+                                          action: SnackBarAction(
+                                            label: 'Close',
+                                            onPressed: () {
+                                              // Hide the SnackBar when the action is pressed
+                                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                            },
+                                          ),
+                                        )
+                                        );
+                                        _resetSnackBarFlagAfterDelay();
+                                      }
 
 
+                            }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFF445EFF),
+                        ),
+                        child: Text(
+                          "Post Review",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontFamily: "Poppins-Medium",
+                          ),
+                        ),
+                                  ),
+                    ),
+                  ),
+                ),
+              )
+          
+            ],
           ),
         ),
 
@@ -152,40 +231,3 @@ class _MapScreenState extends State<MapScreen> {
   }
 }
 
-
-// import 'package:flutter/material.dart';
-// import 'package:google_maps_flutter/google_maps_flutter.dart';
-// import 'package:http/http.dart' as http;
-// import 'dart:convert';
-//
-// class What3WordsMap extends StatefulWidget {
-//   final LatLng coordinates;
-//
-//
-//   What3WordsMap({required this.coordinates});
-//
-//   @override
-//   State<What3WordsMap> createState() => _What3WordsMapState();
-// }
-//
-// class _What3WordsMapState extends State<What3WordsMap> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container();
-//   }
-//
-// }
-//
-//
-// Future<String> convertToWhat3Words(double lat, double lng) async {
-//   const apiKey = 'E1NAKJWV';
-//   final url = "https://api.what3words.com/v3/convert-to-3wa?coordinates=$lat%2C$lng&key=E1NAKJWV";
-//   final response = await http.get(Uri.parse(url));
-//
-//   if (response.statusCode == 200) {
-//     final jsonResponse = json.decode(response.body);
-//     return jsonResponse['words'];
-//   } else {
-//     throw Exception('Failed to get what3words address');
-//   }
-// }
