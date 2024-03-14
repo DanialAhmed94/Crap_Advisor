@@ -6,9 +6,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../widgets/drawer.dart';
 
 class What3WordsScreen extends StatefulWidget {
-  final LatLng latlong;
+  final LatLng festivalLocation;
 
-  What3WordsScreen({required this.latlong});
+  What3WordsScreen({required this.festivalLocation});
 
   @override
   State<What3WordsScreen> createState() => _What3WordsScreenState();
@@ -38,14 +38,7 @@ class _What3WordsScreenState extends State<What3WordsScreen> {
         ],
       ),
       drawer: My_Drawer(),
-       body: MapScreen(),
-      //    Stack(
-   //      children: [
-   //        MapScreen(),
-   //      //  What3WordsMap(coordinates: widget.latlong),
-   // //
-   //      ],
-   //    ),
+       body: MapScreen(intialCameraPosition: LatLng(widget.festivalLocation.latitude,widget.festivalLocation.longitude),),
     );
   }
 }
