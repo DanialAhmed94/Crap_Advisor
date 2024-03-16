@@ -1,6 +1,7 @@
 import 'package:crapadvisor/widgets/what3wordsmap.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../widgets/drawer.dart';
@@ -22,8 +23,8 @@ class _What3WordsScreenState extends State<What3WordsScreen> {
         title: Text('Crap Advisor',style: TextStyle(fontFamily: 'Poppins-Bold',fontWeight: FontWeight.bold),),
         leading: Builder(builder: (BuildContext context) {
           return IconButton(
-            icon: Image.asset(
-              "assets/icons/drawer-icon.png",
+            icon: SvgPicture.asset(
+              'assets/svgs/drawer-icon.svg',
             ),
             onPressed: () {
               Scaffold.of(context).openDrawer();

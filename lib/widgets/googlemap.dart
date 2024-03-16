@@ -1,15 +1,12 @@
-import 'package:crapadvisor/screens/what3words.dart';
 import 'package:crapadvisor/widgets/modalbottamsheet.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
 import '../apis/fetchFestivals.dart';
 import '../models/festivalsDetail_model.dart';
 import '../services/getuser_location.dart';
+import '../services/getCustomMarker.dart';
 
 class GoogleMapWidget extends StatefulWidget {
   const GoogleMapWidget({Key? key}) : super(key: key);
@@ -57,7 +54,7 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
                   print("my location");
                   print("${locationData.latitude}, ${locationData.longitude}");
                   _markers.add(Marker(
-                    icon: await _getCustomMarker(),
+                    icon: await getCustomMarker(),
                     markerId: MarkerId("currentLocation"),
                     position: LatLng(locationData.latitude ?? 0,
                         locationData.longitude ?? 0),
@@ -91,7 +88,7 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
       markerId: MarkerId('userLocation'),
       position: latlng,
       infoWindow: InfoWindow(title: 'Your Current Location'),
-      icon: await _getCustomMarker(),
+      icon: await getCustomMarker(),
     );
     _markers.add(userLocationMarker);
     for (final festival in festivals) {
@@ -99,7 +96,7 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
         markerId: MarkerId(festival.id.toString()),
         position: LatLng(double.parse(festival.latitude), double.parse(festival.longitude)),
         infoWindow: InfoWindow(title: festival.description),
-        icon: await _getCustomMarker(),
+        icon: await getCustomMarker(),
         onTap: (){showMarkerInfo(context, festival);},
       );
       _markers.add(festivalMarker);
@@ -117,7 +114,7 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
       fetchedFestivals = await fetchFestivals(
           "https://stagingcrapadvisor.semicolonstech.com/api/festival");
 
-        festivals = fetchedFestivals.data;
+      festivals = fetchedFestivals.data;
 
     } catch (e) {}
   }
@@ -134,23 +131,7 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
       print("Camera moved to: ${latlng.latitude}, ${latlng.longitude}");
     }
   }
-  Future<BitmapDescriptor> _getCustomMarker() async {
-    final Uint8List markerIcon = await _getBytesFromAsset(
-        'assets/icons/marker.png',
-        100); // Change the asset path and size as needed
-    return BitmapDescriptor.fromBytes(markerIcon);
-  }
-  Future<Uint8List> _getBytesFromAsset(String path, int width) async {
-    ByteData data = await rootBundle.load(path);
-    ui.Codec codec = await ui.instantiateImageCodec(
-      data.buffer.asUint8List(),
-      targetWidth: width,
-    );
-    ui.FrameInfo fi = await codec.getNextFrame();
-    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
-        .buffer
-        .asUint8List();
-  }
+
 
 
 }

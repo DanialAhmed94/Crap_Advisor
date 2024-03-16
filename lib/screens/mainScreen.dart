@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:crapadvisor/widgets/drawer.dart';
+import 'package:flutter_svg/svg.dart';
 import '../services/getuseraddres.dart';
 import '../widgets/googlemap.dart';
 import '../services/location_service.dart';
@@ -63,9 +64,10 @@ class _MainScreenState extends State<MainScreen> {
               ),
               leading: Builder(builder: (BuildContext context) {
                 return IconButton(
-                  icon: Image.asset(
-                    "assets/icons/drawer-icon.png",
+                  icon:SvgPicture.asset(
+                    'assets/svgs/drawer-icon.svg',
                   ),
+
                   onPressed: () {
                     Scaffold.of(context).openDrawer();
                   },

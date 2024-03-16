@@ -46,25 +46,6 @@ showMarkerInfo(BuildContext context, Festival festival) {
               ),
             ),
 
-            // Container(
-            //   decoration: BoxDecoration(
-            //     borderRadius: BorderRadius.circular(20),
-            //   ),
-            //   //   height: 10, // Set height equal to the total height of the bottom sheet
-            //   child: Padding(
-            //     padding: const EdgeInsets.all(8.0),
-            //     child: festival.image != null && festival.image.isNotEmpty
-            //         ? Image.network(
-            //             "https://stagingcrapadvisor.semicolonstech.com/api/festival/${festival.image}",
-            //             fit: BoxFit.cover,
-            //           )
-            //         : Image.asset(
-            //             "assets/icons/logo.png",
-            //             fit: BoxFit
-            //                 .cover, // Ensure the image covers the entire height of the container
-            //           ),
-            //   ),
-            // ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

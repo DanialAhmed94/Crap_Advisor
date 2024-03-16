@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:crapadvisor/screens/selectFacility.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -18,7 +19,7 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   GoogleMapController? mapController;
   TextEditingController _what3WordsController = TextEditingController();
-   Marker? marker = null;
+  Marker? marker = null;
   bool isSnackBarVisible = false;
   double buttonPosition = 16;
   Set<Polyline> _gridLines = {};
@@ -39,9 +40,10 @@ class _MapScreenState extends State<MapScreen> {
             controller: _what3WordsController,
             readOnly: true,
             decoration: InputDecoration(
-              labelText: 'What3Words Address', labelStyle: TextStyle(
-              fontFamily: "Poppins-Medium",
-            ),
+              labelText: 'What3Words Address',
+              labelStyle: TextStyle(
+                fontFamily: "Poppins-Medium",
+              ),
               border: OutlineInputBorder(),
             ),
           ),
@@ -54,15 +56,15 @@ class _MapScreenState extends State<MapScreen> {
                 onCameraMove: _onCameraMove,
                 onTap: _onMapTap,
                 initialCameraPosition: CameraPosition(
-                  target: LatLng(widget.intialCameraPosition.latitude, widget.intialCameraPosition.longitude), // Center on London
+                  target: LatLng(widget.intialCameraPosition.latitude,
+                      widget.intialCameraPosition.longitude),
+                  // Center on London
                   zoom: 20,
                 ),
                 polylines: _gridLines,
                 zoomControlsEnabled: false,
                 markers: marker != null ? Set<Marker>.of([marker!]) : {},
                 myLocationButtonEnabled: false,
-              
-              
               ),
               AnimatedPositioned(
                 bottom: buttonPosition,
@@ -71,37 +73,41 @@ class _MapScreenState extends State<MapScreen> {
                 duration: Duration(milliseconds: 300),
                 child: Center(
                   child: Padding(
-                    padding: EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.2,
-                        right: MediaQuery.of(context).size.width*0.2),
+                    padding: EdgeInsets.only(
+                        left: MediaQuery.of(context).size.width * 0.2,
+                        right: MediaQuery.of(context).size.width * 0.2),
                     child: Container(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: (){
-                          if(marker==null)
-                            {
-                              setState(() {
-                                buttonPosition = 40.0; // Move button upwards when Snackbar is shown
-                              });
-                                    if(!isSnackBarVisible)
-                                      {
-                                        isSnackBarVisible=true;
-                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                          content: Text(" Select a position first"),
-                                          duration: Duration(seconds: 2),
-                                          action: SnackBarAction(
-                                            label: 'Close',
-                                            onPressed: () {
-                                              // Hide the SnackBar when the action is pressed
-                                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                                            },
-                                          ),
-                                        )
-                                        );
-                                        _resetSnackBarFlagAfterDelay();
-                                      }
-
-
+                        onPressed: () {
+                          if (marker == null) {
+                            setState(() {
+                              buttonPosition =
+                                  40.0; // Move button upwards when Snackbar is shown
+                            });
+                            if (!isSnackBarVisible) {
+                              isSnackBarVisible = true;
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: Text(" Select a position first"),
+                                duration: Duration(seconds: 2),
+                                action: SnackBarAction(
+                                  label: 'Close',
+                                  onPressed: () {
+                                    // Hide the SnackBar when the action is pressed
+                                    ScaffoldMessenger.of(context)
+                                        .hideCurrentSnackBar();
+                                  },
+                                ),
+                              ));
+                              _resetSnackBarFlagAfterDelay();
                             }
+                          } else {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => SelectFacilty()));
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xFF445EFF),
@@ -114,16 +120,14 @@ class _MapScreenState extends State<MapScreen> {
                             fontFamily: "Poppins-Medium",
                           ),
                         ),
-                                  ),
+                      ),
                     ),
                   ),
                 ),
               )
-          
             ],
           ),
         ),
-
       ],
     );
   }
@@ -138,11 +142,13 @@ class _MapScreenState extends State<MapScreen> {
       }
     });
   }
-  void _onMapTap(LatLng latLng) async {
 
-    String? what3Words = await convertToWhat3Words(latLng.latitude, latLng.longitude);
+  void _onMapTap(LatLng latLng) async {
+    String? what3Words =
+        await convertToWhat3Words(latLng.latitude, latLng.longitude);
     setState(() {
-      _what3WordsController.text = what3Words ?? 'Unable to fetch What3Words address';
+      _what3WordsController.text =
+          what3Words ?? 'Unable to fetch What3Words address';
 
       if (marker != null) {
         marker = Marker(
@@ -157,9 +163,11 @@ class _MapScreenState extends State<MapScreen> {
       }
     });
   }
+
   Future<String?> convertToWhat3Words(double lat, double lng) async {
     const apiKey = 'E1NAKJWV';
-    final url = "https://api.what3words.com/v3/convert-to-3wa?coordinates=$lat%2C$lng&key=E1NAKJWV";
+    final url =
+        "https://api.what3words.com/v3/convert-to-3wa?coordinates=$lat%2C$lng&key=E1NAKJWV";
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
@@ -169,15 +177,18 @@ class _MapScreenState extends State<MapScreen> {
       throw Exception('Failed to get What3Words address');
     }
   }
+
   void _generateGrid(LatLngBounds bounds) {
-    final double step = 0.0001; // This represents the approximate size of a what3words square
+    final double step =
+        0.0001; // This represents the approximate size of a what3words square
     _gridLines.clear();
 
     // Calculate the number of grid lines needed
-    int latLines = ((bounds.northeast.latitude - bounds.southwest.latitude) /
-        step).ceil();
-    int lngLines = ((bounds.northeast.longitude - bounds.southwest.longitude) /
-        step).ceil();
+    int latLines =
+        ((bounds.northeast.latitude - bounds.southwest.latitude) / step).ceil();
+    int lngLines =
+        ((bounds.northeast.longitude - bounds.southwest.longitude) / step)
+            .ceil();
 
     // Create latitude lines
     for (int i = 0; i <= latLines; i++) {
@@ -213,6 +224,7 @@ class _MapScreenState extends State<MapScreen> {
 
     setState(() {});
   }
+
   void _onCameraMove(CameraPosition position) async {
     if (mapController != null) {
       LatLngBounds bounds = await mapController!.getVisibleRegion();
@@ -221,21 +233,16 @@ class _MapScreenState extends State<MapScreen> {
     setState(() {
       _what3WordsController.clear();
       marker = null;
-
     });
   }
+
   void _resetSnackBarFlagAfterDelay() {
     const delay = Duration(seconds: 2);
     Timer(delay, () {
       setState(() {
         isSnackBarVisible = false;
-        buttonPosition= 16;
+        buttonPosition = 16;
       });
     });
   }
-
-
-
-
 }
-

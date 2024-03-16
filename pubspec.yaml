@@ -41,7 +41,7 @@ dependencies:
   location: ^5.0.0
   geocoding: ^2.2.0
   geolocator: ^11.0.0
-
+  flutter_svg: ^2.0.5
 
 
 dev_dependencies:
@@ -61,6 +61,7 @@ flutter:
   assets:
     - assets/annim/
     - assets/icons/
+    - assets/svgs/
   fonts:
     - family: Poppins
       fonts:
