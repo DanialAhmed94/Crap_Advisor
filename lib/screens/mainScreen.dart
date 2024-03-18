@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import '../services/getuseraddres.dart';
 import '../widgets/googlemap.dart';
 import '../services/location_service.dart';
+import '../widgets/myAppBar.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -18,15 +19,15 @@ class _MainScreenState extends State<MainScreen> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
-            appBar: AppBar(
-              title: Text(
-                'Crap Advisor',
-                style: TextStyle(
-                  fontFamily: 'Poppins-Bold',
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            // appBar: AppBar(
+            //   title: Text(
+            //     'Crap Advisor',
+            //     style: TextStyle(
+            //       fontFamily: 'Poppins-Bold',
+            //       fontWeight: FontWeight.bold,
+            //     ),
+            //   ),
+            // ),
             body: Center(child: CircularProgressIndicator()),
           );
         } else if (snapshot.data == false) {
@@ -55,6 +56,7 @@ class _MainScreenState extends State<MainScreen> {
         } else {
           return Scaffold(
             appBar: AppBar(
+              toolbarHeight: 75,
               title: Text(
                 'Crap Advisor',
                 style: TextStyle(
@@ -63,9 +65,11 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ),
               leading: Builder(builder: (BuildContext context) {
-                return IconButton(
+                return
+                IconButton(
                   icon:SvgPicture.asset(
                     'assets/svgs/drawer-icon.svg',
+                    fit: BoxFit.cover,
                   ),
 
                   onPressed: () {

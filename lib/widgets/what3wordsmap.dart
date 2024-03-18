@@ -7,6 +7,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../services/getCustomMarker.dart';
+
 class MapScreen extends StatefulWidget {
   final LatLng intialCameraPosition;
 
@@ -23,13 +25,26 @@ class _MapScreenState extends State<MapScreen> {
   bool isSnackBarVisible = false;
   double buttonPosition = 16;
   Set<Polyline> _gridLines = {};
+  BitmapDescriptor? _customMarkerIcon; // Variable to store custom marker icon
+
 
   @override
   void dispose() {
     _what3WordsController.dispose();
     super.dispose();
   }
-
+  @override
+  void initState(){
+    super.initState();
+    _fetchCustomMarker();
+  }
+  Future<void> _fetchCustomMarker() async {
+    try {
+      _customMarkerIcon = await getCustomMarker();
+    } catch (e) {
+      print("Error fetching custom marker icon: $e");
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -154,11 +169,13 @@ class _MapScreenState extends State<MapScreen> {
         marker = Marker(
           markerId: MarkerId("3"),
           position: latLng,
+          icon:_customMarkerIcon ?? BitmapDescriptor.defaultMarker,
         );
       } else {
         marker = Marker(
           markerId: MarkerId("3"),
           position: latLng,
+            icon:_customMarkerIcon ?? BitmapDescriptor.defaultMarker
         );
       }
     });

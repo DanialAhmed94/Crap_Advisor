@@ -1,5 +1,3 @@
-import 'package:crapadvisor/widgets/modalbottamsheet.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -7,6 +5,7 @@ import '../apis/fetchFestivals.dart';
 import '../models/festivalsDetail_model.dart';
 import '../services/getuser_location.dart';
 import '../services/getCustomMarker.dart';
+import 'modalbottamsheet.dart';
 
 class GoogleMapWidget extends StatefulWidget {
   const GoogleMapWidget({Key? key}) : super(key: key);
@@ -14,19 +13,65 @@ class GoogleMapWidget extends StatefulWidget {
   @override
   State<GoogleMapWidget> createState() => _GoogleMapWidgetState();
 }
+
 class _GoogleMapWidgetState extends State<GoogleMapWidget> {
-  late CameraPosition _kGooglePlex = CameraPosition(target: LatLng(0, 0),);
-  late LatLng latlng = LatLng(0, 0);
   late GoogleMapController _controller;
   List<Marker> _markers = [];
   List<Festival> festivals = [];
   late Festivals fetchedFestivals;
+  BitmapDescriptor? _customMarkerIcon; // Variable to store custom marker icon
 
   @override
   void initState() {
     super.initState();
-    initializeMapAndFetchData();
+    _setupMap();
+    _fetchCustomMarker(); // Fetch custom marker icon
+  }
 
+  Future<void> _setupMap() async {
+    try {
+      final Position position = await getUserLocation();
+      final LatLng latLng = LatLng(position.latitude, position.longitude);
+
+      await fetchFestivalsData();
+
+    setState(() {
+      _markers.add(
+        Marker(
+          markerId: MarkerId('userLocation'),
+          position: latLng,
+          infoWindow: InfoWindow(title: 'Your Current Location'),
+          icon: _customMarkerIcon ?? BitmapDescriptor.defaultMarker,
+        ),
+      );
+      for (final festival in festivals) {
+        _markers.add(
+          Marker(
+            markerId: MarkerId(festival.id.toString()),
+            position: LatLng(double.parse(festival.latitude), double.parse(festival.longitude)),
+            infoWindow: InfoWindow(title: festival.description),
+            icon: _customMarkerIcon ?? BitmapDescriptor.defaultMarker, // Use custom marker icon if available
+            onTap: () {
+              showMarkerInfo(context, festival);
+            },
+          ),
+        );
+      }
+    });
+
+      _controller.animateCamera(CameraUpdate.newLatLngZoom(latLng, 14));
+    } catch (e) {
+      print("Error setting up map: $e");
+    }
+  }
+
+  // Asynchronous operation to fetch custom marker icon
+  Future<void> _fetchCustomMarker() async {
+    try {
+      _customMarkerIcon = await getCustomMarker();
+    } catch (e) {
+      print("Error fetching custom marker icon: $e");
+    }
   }
 
   @override
@@ -34,11 +79,13 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
     return Stack(
       children: [
         GoogleMap(
-          initialCameraPosition: _kGooglePlex,
           onMapCreated: (GoogleMapController controller) {
             _controller = controller;
-            _moveCameraToCurrentUserLocation();
           },
+          initialCameraPosition: CameraPosition(
+            target: LatLng(0, 0), // Initial value doesn't matter since we update it later
+            zoom: 14,
+          ),
           markers: Set<Marker>.of(_markers),
           zoomControlsEnabled: false,
           myLocationButtonEnabled: false,
@@ -49,89 +96,42 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
           child: ElevatedButton(
             onPressed: () async {
               getUserLocation().then((locationData) async {
-                // Make sure to check if locationData is not null
                 if (locationData != null) {
                   print("my location");
                   print("${locationData.latitude}, ${locationData.longitude}");
                   _markers.add(Marker(
-                    icon: await getCustomMarker(),
+                    icon: _customMarkerIcon ?? BitmapDescriptor.defaultMarker,
                     markerId: MarkerId("currentLocation"),
-                    position: LatLng(locationData.latitude ?? 0,
-                        locationData.longitude ?? 0),
+                    position: LatLng(locationData.latitude ?? 0, locationData.longitude ?? 0),
                     infoWindow: InfoWindow(title: "Your current location"),
                   ));
                   CameraPosition newCameraPosition = CameraPosition(
-                    target: LatLng(locationData.latitude ?? 0,
-                        locationData.longitude ?? 0),
-                    zoom: 14, // Consider setting an appropriate zoom level
+                    target: LatLng(locationData.latitude ?? 0, locationData.longitude ?? 0),
+                    zoom: 14,
                   );
                   GoogleMapController googleMapController = await _controller;
                   googleMapController.animateCamera(
                     CameraUpdate.newCameraPosition(newCameraPosition),
                   );
-                  setState(() {});
+                  setState(() {}); // Update UI with new marker
                 }
               }).catchError((error) {
-                // Handle any errors here
                 print("Error getting location: $error");
               });
             },
             child: Icon(Icons.my_location_outlined),
           ),
-        )
+        ),
       ],
     );
   }
-  Future<void> _setupMarkers() async {
-    // Create a marker for the user's current location
-    final userLocationMarker = Marker(
-      markerId: MarkerId('userLocation'),
-      position: latlng,
-      infoWindow: InfoWindow(title: 'Your Current Location'),
-      icon: await getCustomMarker(),
-    );
-    _markers.add(userLocationMarker);
-    for (final festival in festivals) {
-      final festivalMarker = Marker(
-        markerId: MarkerId(festival.id.toString()),
-        position: LatLng(double.parse(festival.latitude), double.parse(festival.longitude)),
-        infoWindow: InfoWindow(title: festival.description),
-        icon: await getCustomMarker(),
-        onTap: (){showMarkerInfo(context, festival);},
-      );
-      _markers.add(festivalMarker);
-    }
 
-    setState(() {});
-  }
-  Future<void> initializeMapAndFetchData() async {
-    await _initMap(); // Initialize the map with the user's current location.
-    await fetchFestivalsData(); // Fetch festival data.
-    await _setupMarkers(); // Setup markers after fetching data and initializing map.
-  }
   Future<void> fetchFestivalsData() async {
     try {
-      fetchedFestivals = await fetchFestivals(
-          "https://stagingcrapadvisor.semicolonstech.com/api/festival");
-
+      fetchedFestivals = await fetchFestivals("https://stagingcrapadvisor.semicolonstech.com/api/festival");
       festivals = fetchedFestivals.data;
-
-    } catch (e) {}
-  }
-  Future<void> _initMap() async {
-    final Position locationData = await getUserLocation();
-    latlng = LatLng(locationData.latitude, locationData.longitude);
-    setState(() {
-      _kGooglePlex = CameraPosition(target: LatLng(locationData.latitude, locationData.longitude), zoom: 14);
-    });
-  }
-  Future<void> _moveCameraToCurrentUserLocation() async {
-    if (_controller != null && latlng != LatLng(0, 0)) {
-      await _controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: LatLng(latlng.latitude, latlng.longitude), zoom: 14)));
-      print("Camera moved to: ${latlng.latitude}, ${latlng.longitude}");
+    } catch (e) {
+      print("Error fetching festivals data: $e");
     }
   }
-
-
-
 }

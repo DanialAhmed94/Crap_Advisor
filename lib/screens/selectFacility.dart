@@ -2,30 +2,46 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import '../apis/fetchFacilityType.dart';
 import '../models/facilityType_model.dart';
+import '../widgets/drawer.dart';
 
 class SelectFacilty extends StatelessWidget {
+ late String festivalvalId;
+ late String latitude;
+ late String longitude;
+ late String what3wordsAddress;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          icon: SvgPicture.asset(
-            'assets/svgs/drawer-icon.svg',
-          ),
-        ),
-        automaticallyImplyLeading: false,
+        toolbarHeight: 75,
         title: Text(
-          "Select Facility",
+          'Select Facility',
           style: TextStyle(
             fontFamily: 'Poppins-Bold',
             fontWeight: FontWeight.bold,
           ),
         ),
+        leading: Builder(builder: (BuildContext context) {
+          return
+            IconButton(
+              icon:SvgPicture.asset(
+                'assets/svgs/drawer-icon.svg',
+                fit: BoxFit.cover,
+              ),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+        }),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.notifications_none_outlined),
+          ),
+        ],
       ),
+      drawer: My_Drawer(),
       body: FutureBuilder<FacilityTypes>(
         future: fetchFacilityTypeData("https://stagingcrapadvisor.semicolonstech.com/api/toilet_type"),
         builder: (context, snapshot) {
@@ -48,28 +64,34 @@ class SelectFacilty extends StatelessWidget {
               itemCount: facilityList.length,
               itemBuilder: (context, index) {
                 Facility facility = facilityList[index];
-                return GridTile(
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Image.network(
-                          facility.image,
-                          fit: BoxFit.fill,
-                          errorBuilder: (context,error,stackTrace){
-                           return Image.asset("assets/icons/appLogo.png");
-                          },
+                return GestureDetector(
+                  child: GridTile(
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Image.network(
+                            facility.image,
+                            fit: BoxFit.fill,
+                            errorBuilder: (context,error,stackTrace){
+                             return Image.asset("assets/icons/appLogo.png");
+                            },
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        facility.name,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: "Poppins-Medium",
+                        SizedBox(height: 8),
+                        Text(
+                          facility.name,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: "Poppins-SemiBold",
+                            fontSize: 16,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                  onTap: (){
+
+                  },
                 );
               },
             );
