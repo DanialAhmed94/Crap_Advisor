@@ -22,29 +22,37 @@ showMarkerInfo(BuildContext context, Festival festival) {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-              ),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: festival.image != null && festival.image.isNotEmpty
-                    ? Image.network(
-                  "https://stagingcrapadvisor.semicolonstech.com/api/festival/${festival.image}",
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    // If an error occurs while loading the image, show the default image
-                    return Image.asset(
-                      "assets/icons/logo.png",
+                    ? Padding(
+                  padding: EdgeInsets.all(10),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      "https://stagingcrapadvisor.semicolonstech.com/asset/festivals/" +
+                          festival.image,
                       fit: BoxFit.cover,
-                    );
-                  },
+                      errorBuilder: (context, error, stackTrace) {
+                        // If an error occurs while loading the image, show the default image
+                        return Image.asset(
+                          "assets/icons/logo.png",
+                          fit: BoxFit.cover,
+                        );
+                      },
+                    ),
+                  ),
                 )
-                    : Image.asset(
-                  "assets/icons/logo.png",
-                  fit: BoxFit.cover,
+                    : ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.asset(
+                    "assets/icons/logo.png",
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
+
 
             Expanded(
               child: Column(
@@ -86,7 +94,7 @@ showMarkerInfo(BuildContext context, Festival festival) {
                               context,
                               MaterialPageRoute(
                                   builder: (context) => What3WordsScreen(
-                                    festivalLocation: LatLng(
+                                        festivalLocation: LatLng(
                                             double.parse(festival.latitude),
                                             double.parse(festival.longitude)),
                                       )));

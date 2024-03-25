@@ -30,8 +30,10 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   void dispose() {
-    _what3WordsController.dispose();
     super.dispose();
+    _what3WordsController.dispose();
+    _what3WordsController.dispose();
+
   }
   @override
   void initState(){

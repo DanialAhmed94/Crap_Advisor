@@ -41,7 +41,8 @@ dependencies:
   location: ^5.0.0
   geocoding: ^2.2.0
   geolocator: ^11.0.0
-  flutter_svg: ^2.0.9
+  flutter_svg: ^2.0.5
+  video_player: ^2.8.3
 
 
 dev_dependencies:
@@ -62,6 +63,8 @@ flutter:
     - assets/annim/
     - assets/icons/
     - assets/svgs/
+    - assets/images/
+    - assets/videos/
   fonts:
     - family: Poppins
       fonts:

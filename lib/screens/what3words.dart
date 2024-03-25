@@ -18,7 +18,7 @@ class What3WordsScreen extends StatefulWidget {
 class _What3WordsScreenState extends State<What3WordsScreen> {
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
+    return Scaffold(
       appBar: AppBar(
         toolbarHeight: 75,
         title: Text(
@@ -29,17 +29,15 @@ class _What3WordsScreenState extends State<What3WordsScreen> {
           ),
         ),
         leading: Builder(builder: (BuildContext context) {
-          return
-            IconButton(
-              icon:SvgPicture.asset(
-                'assets/svgs/drawer-icon.svg',
-                fit: BoxFit.cover,
-              ),
-
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
+          return IconButton(
+            icon: SvgPicture.asset(
+              'assets/svgs/drawer-icon.svg',
+              fit: BoxFit.cover,
+            ),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+          );
         }),
         actions: [
           IconButton(
@@ -49,7 +47,10 @@ class _What3WordsScreenState extends State<What3WordsScreen> {
         ],
       ),
       drawer: My_Drawer(),
-       body: MapScreen(intialCameraPosition: LatLng(widget.festivalLocation.latitude,widget.festivalLocation.longitude),),
+      body: MapScreen(
+        intialCameraPosition: LatLng(widget.festivalLocation.latitude,
+            widget.festivalLocation.longitude),
+      ),
     );
   }
 }
